@@ -1,9 +1,11 @@
 import argparse
 
 import setproctitle
+import torch
 
-from env.mujoco.call_env import call_env as call_mujoco_env
-from policy.call_policy import call_policy
+from algo.build_policy import build_policy
+from config.config import build_config
+from env.build_envs import build_envs
 
 if __name__ == "__main__":
     # Parse required arguments
@@ -20,7 +22,7 @@ if __name__ == "__main__":
         help="The scale of the dynamics shift. Note that this value varies on different settins",
     )
     parser.add_argument(
-        "--tar_env_interaction_interval",
+        "--tar_env_interact_interval",
         default=10,
         type=int,
         help="The interval of interactions with the target environment",
@@ -35,8 +37,27 @@ if __name__ == "__main__":
 
     setproctitle.setproctitle(f"{args.seed}-{args.policy}-{args.env}")
 
-    env = call_mujoco_env()
-    policy = call_policy()
-    
+    if torch.cuda.is_available():
+        device = "cuda"
+        print("CUDA (GPU) is available. Using GPU.")
+    else:
+        device = "cpu"
+        print("CUDA not available. Using CPU.")
+
+    if any(s in args.env.lower() for s in ["halfcheetah", "walker2d", "ant", "hopper"]):
+        domain = "mujoco"
+    else:
+        raise NotImplementedError("Environment not supported")
+
+    # Build Environments
+    src_env, tar_env, src_eval_env, tar_eval_env = build_envs(args, domain)
+
+    # Generate Config
+    config = build_config(args, domain, src_env, device)
+
+    # Get src and tar policies
+    # for baseline algorithms, src_policy = tar_policy
+    src_policy, tar_policy = build_policy()
+
     for step in range(args.max_steps):
-        
+        pass

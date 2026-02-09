@@ -15,6 +15,8 @@ def build_config(args, domain, env, device):
 
     action_dim = env.action_space.shape[0]
     state_dim = env.observation_space.shape[0]
+    max_action = env.action_space.high[0]
+    min_action = -max_action
 
     config.update(
         {
@@ -23,6 +25,8 @@ def build_config(args, domain, env, device):
             "action_dim": action_dim,
             "tar_env_interact_interval": args.tar_env_interact_interval,
             "max_steps": args.max_steps,
+            "max_action": max_action,
+            "min_action": min_action,
             "shift_level": args.shift_level,
             "domain": domain,
             "device": device,

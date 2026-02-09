@@ -18,4 +18,9 @@ def build_envs(args, domain):
     src_eval_env.reset(seed=args.seed + 42)
     tar_eval_env.reset(seed=args.seed + 42)
 
+    src_env.action_space.seed(args.seed)
+    tar_env.action_space.seed(args.seed)
+    src_eval_env.action_space.seed(args.seed + 42)
+    tar_eval_env.action_space.seed(args.seed + 42)
+
     return src_env, tar_env, src_eval_env, tar_eval_env

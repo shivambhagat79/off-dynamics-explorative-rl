@@ -12,6 +12,7 @@ from config.config import build_config
 from env.build_envs import build_envs
 from utils.eval_policy import eval_policy
 from utils.replay_buffer import ReplayBuffer
+from utils.tsne_plot import plot_tsne
 
 if __name__ == "__main__":
     # Parse required arguments
@@ -34,6 +35,11 @@ if __name__ == "__main__":
         help="The interval of interactions with the target environment",
     )
     parser.add_argument("--max_steps", default=int(1e6), type=int)
+    parser.add_argument(
+        "--tsne",
+        action="store_true",
+        help="Generate t-SNE plot of state-space coverage at the end of training",
+    )
 
     args = parser.parse_args()
 
@@ -80,6 +86,10 @@ if __name__ == "__main__":
     src_replay_buffer = ReplayBuffer(config["state_dim"], config["action_dim"], device)
     tar_replay_buffer = ReplayBuffer(config["state_dim"], config["action_dim"], device)
 
+    # Online state collection for t-SNE visualization
+    src_states_collected = []
+    tar_states_collected = []
+
     # Initialise state variables
     src_state, _ = src_env.reset()
     tar_state, _ = tar_env.reset()
@@ -109,6 +119,8 @@ if __name__ == "__main__":
             src_state, src_action, src_next_state, src_reward, src_done
         )
 
+        if args.tsne:
+            src_states_collected.append(src_state)
         src_state = src_next_state
         src_episode_reward += float(src_reward)
 
@@ -126,6 +138,8 @@ if __name__ == "__main__":
                 tar_state, tar_action, tar_next_state, tar_reward, tar_done
             )
 
+            if args.tsne:
+                tar_states_collected.append(tar_state)
             tar_state = tar_next_state
             tar_episode_reward += float(tar_reward)
 
@@ -172,3 +186,12 @@ if __name__ == "__main__":
                 "test/target return", tar_eval_return, global_step=step + 1
             )
             eval_cnt += 1
+
+    # Generate t-SNE plot at the end of training
+    if args.tsne:
+        tsne_output_dir = f"./tsne_plots/{args.policy.upper()}/{args.env.lower()}/r{args.seed}"
+        plot_tsne(
+            np.array(src_states_collected),
+            np.array(tar_states_collected),
+            tsne_output_dir,
+        )

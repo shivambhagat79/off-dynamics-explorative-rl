@@ -13,6 +13,8 @@ def build_env(env_name, shift_level=None):
         assert shift_level is not None
         assert shift_level.lower() in ["easy", "medium", "hard"]
     elif "friction" in env_name or "gravity" in env_name:
+        assert shift_level is not None
+        shift_level = float(shift_level)
         assert shift_level in [0.1, 0.5, 2.0, 5.0]
 
     env_class = {
@@ -34,7 +36,7 @@ def build_env(env_name, shift_level=None):
 
     assert shift_level is not None
     xml_file_path = f"./env/mujoco/assets/{env_name}_{shift_level}.xml"
-    assert os.path.exists(xml_file_path)
+    assert os.path.exists(xml_file_path), f"'{xml_file_path}' could not be found."
 
     return TimeLimit(
         env_class(xml_file=xml_file_path),

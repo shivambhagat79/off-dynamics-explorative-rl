@@ -17,10 +17,4 @@ def eval_policy(policy, env, eval_episodes=10, eval_cnt=None):
             state = next_state
     avg_reward /= eval_episodes
 
-    print(
-        "[{}] Evaluation over {} episodes: {}".format(
-            eval_cnt, eval_episodes, avg_reward
-        )
-    )
-
     return avg_reward

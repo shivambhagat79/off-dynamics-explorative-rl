@@ -98,9 +98,11 @@ if __name__ == "__main__":
     src_episode_reward, src_episode_num = 0, 1
     tar_episode_reward, tar_episode_num = 0, 1
     eval_cnt = 0
+    src_eval_return = None
+    tar_eval_return = None
 
     pbar = trange(config["max_steps"], desc="Timesteps")
-    pbar.set_postfix({"src_ep": src_episode_num, "tar_ep": tar_episode_num})
+    pbar.set_postfix({"src_eval": "N/A", "tar_eval": "N/A"})
 
     for step in pbar:
         # Pick source Action
@@ -162,7 +164,6 @@ if __name__ == "__main__":
             src_done = False
             src_episode_reward = 0
             src_episode_num += 1
-            pbar.set_postfix({"src_ep": src_episode_num, "tar_ep": tar_episode_num})
 
         # Tar episode complete
         if tar_done:
@@ -173,7 +174,6 @@ if __name__ == "__main__":
             tar_done = False
             tar_episode_reward = 0
             tar_episode_num += 1
-            pbar.set_postfix({"src_ep": src_episode_num, "tar_ep": tar_episode_num})
 
         # Evaluate the policy
         if (step + 1) % config["eval_freq"] == 0:
@@ -185,11 +185,19 @@ if __name__ == "__main__":
             writer.add_scalar(
                 "test/target return", tar_eval_return, global_step=step + 1
             )
+            pbar.set_postfix(
+                {
+                    "src_eval": f"{src_eval_return:.1f}",
+                    "tar_eval": f"{tar_eval_return:.1f}",
+                }
+            )
             eval_cnt += 1
 
     # Generate t-SNE plot at the end of training
     if args.tsne:
-        tsne_output_dir = f"./tsne_plots/{args.policy.upper()}/{args.env.lower()}/r{args.seed}"
+        tsne_output_dir = (
+            f"./tsne_plots/{args.policy.upper()}/{args.env.lower()}/r{args.seed}"
+        )
         plot_tsne(
             np.array(src_states_collected),
             np.array(tar_states_collected),

@@ -129,7 +129,7 @@ class Classifier(nn.Module):
         return sas_logits, sa_logits
 
 
-class TUNE_SE(object):
+class TUNE_SE_2(object):
     def __init__(
         self,
         config,
@@ -344,11 +344,14 @@ class TUNE_SE(object):
                 # rare extreme outliers.
                 intrinsic_reward = torch.clamp(intrinsic_reward, min=0.0, max=5.0)
 
+                # Beta coefficient to scale down intrinsic reward
+                beta = 0.1  # You can tune this value (e.g., 0.1, 0.05)
+                
                 # Log balance of rewards ~1% of the time to avoid spamming the console
                 if np.random.rand() < 0.01:
                     print(f"Step {self.total_it} | Tar Task Reward Mean: {tar_reward.mean().item():.3f} | Intrinsic Bonus Mean: {intrinsic_reward.mean().item():.3f}")
 
-                augmented_reward = tar_reward + intrinsic_reward
+                augmented_reward = tar_reward + (beta * intrinsic_reward)
 
             # -- Update Q-functions (critic) --
             with torch.no_grad():

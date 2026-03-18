@@ -45,7 +45,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    assert args.policy.lower() in ["tune_tb", "tune_se"]
+    assert args.policy.lower() in ["tune_tb", "tune_se", "tune_se_2"], "Currently only TUNE_TB, TUNE_SE and TUNE_SE_2 are supported"
 
     # Replace '-' with '_' for consistency in argument names
     if "-" in args.env:

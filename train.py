@@ -53,9 +53,14 @@ if __name__ == "__main__":
     np.random.seed(args.seed)
     random.seed(args.seed)
 
+    # Create a specific environment name for logging that includes difficulty if applicable
+    log_env_name = args.env.lower()
+    if str(args.shift_level) in ["easy", "medium", "hard"]:
+        log_env_name = f"{log_env_name}_{args.shift_level}"
+
     # Initialise Tensorboard directory and writer
     output_dir = (
-        f"{args.dir}/{args.policy.upper()}/{args.env.lower()}/r{str(args.seed)}"
+        f"{args.dir}/{args.policy.upper()}/{log_env_name}/r{str(args.seed)}"
     )
     writer = SummaryWriter(f"{output_dir}/tb")
 
@@ -80,7 +85,7 @@ if __name__ == "__main__":
 
     # Get src and tar policies
     # for baseline algorithms, src_policy = tar_policy
-    src_policy, tar_policy = build_policy(args.policy, config, device)
+    src_policy = tar_policy = build_policy(args.policy, config, device)
 
     # Initialize Replay Buffers
     src_replay_buffer = ReplayBuffer(config["state_dim"], config["action_dim"], device)
@@ -196,7 +201,7 @@ if __name__ == "__main__":
     # Generate t-SNE plot at the end of training
     if args.tsne:
         tsne_output_dir = (
-            f"./tsne_plots/{args.policy.upper()}/{args.env.lower()}/r{args.seed}"
+            f"./tsne_plots/{args.policy.upper()}/{log_env_name}/r{args.seed}"
         )
         plot_tsne(
             np.array(src_states_collected),
